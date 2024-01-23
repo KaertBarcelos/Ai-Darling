@@ -1,0 +1,68 @@
+#Para poder inciar, deve-se enteder que o comando somente ira funciona em um ambiente virtual, com as demias bibliotecas baixadas
+#Abra o promt do Anaconda -> activate {nome do ambiente virtual} (Ex: activate chatpython)
+#Segundo comando para execução -> jupyter notebook (Faça isso no proprio promt do Anaconda, caso você use o jupyter)
+
+from chatterbot import ChatBot
+import datetime
+from chatterbot.trainers import ListTrainer
+from chatterbot.trainers import ChatterBotCorpusTrainer
+from chatterbot.response_selection import get_most_frequent_response
+# isso aqui só precisa para corrigir o bug
+from spacy.cli import download
+
+#download("en_core_web_sm")
+
+class ENGSM:
+    ISO_639_1 = 'en_core_web_sm'
+
+chatbot = ChatBot(
+    "BotArt",tagger_language=ENGSM,
+    storage_adapter='chatterbot.storage.SQLStorageAdapter',
+    database_uri='sqlite:///database.sqlite3',
+    logic_adapters=[
+        {
+            "import_path": "chatterbot.logic.BestMatch",
+           
+        }
+    ]
+)
+certas = 0
+erradas = 0
+def repostas_certas(certas, erradas):
+    #Aréa temporal
+    hora_atual = datetime.datetime.now()
+    # Extrair a parte da hora
+    hora = hora_atual.hour
+    minuto = hora_atual.minute
+    segundo = hora_atual.second #Finalização Aréa temporal
+    respostas = ListTrainer(chatbot)
+    respostas.train([
+        'Bom dia!',
+        'Bom dia, como você esta?',
+        'Como você esta?',
+        'Estou bem','Estou otimo',';]',
+        'Que horas são agora?' or "Quais as horas atuais",
+        f'Agora são {hora} e {minuto}',
+    ])
+    # PROVAVEL VOCE VAI TEM QUE ATIVAR ELE NO PROGRAMA DO ANACONDA!
+
+repostas_certas(certas, erradas)
+mensagem = input("Manda a mensagem:")
+resposta = chatbot.get_response(mensagem)
+print(float(resposta.confidence) < 0.5)
+print(float(resposta.confidence) > 0.5)
+print(float(resposta.confidence) == 1.0)
+
+while True:
+    try:
+        mensagem = input("Manda a mensagem:")
+        resposta = chatbot.get_response(mensagem)
+        if float(resposta.confidence) > 0.5:
+            print("Bot:", resposta )
+        elif mensagem == "Parar":
+            break
+        else:
+            print('Bot: Ainda não sei responder esta pergunta')
+            
+    except(KeyboardInterrupt, EOFError, SystemExit):
+        break
