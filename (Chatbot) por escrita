@@ -41,12 +41,33 @@ def repostas_certas(certas, erradas):
         'Bom dia, como você esta?',
         'Como você esta?',
         'Estou bem','Estou otimo',';]',
-        'Que horas são agora?' or "Quais as horas atuais",
+        'Que horas são agora?' or "Quais as horas atuais?",
         f'Agora são {hora} e {minuto}',
+        'Obrigado',
+        'De nada',
+        'Agradeço pelo compreensão ', 
+    ])
+    respostas.train([
+        'Olá, como você está?',
+        'Olá! Estou aqui para ajudar. Como posso ser útil hoje?',
+        'Compreendo','Entendo',
+        'Estou bem','Que otimo',';]',
+        'Como os chatbots funcionam?',
+        'Chatbots utilizam algoritmos de processamento de linguagem natural para entender e responder a mensagens'
+        'Qual é a diferença entre inteligência artificial e aprendizado de máquina?',
+        'A inteligência artificial é o campo mais amplo que visa criar máquinas capazes de realizar ',
+        'Obrigado!',
+        'De nada',
     ])
     # PROVAVEL VOCE VAI TEM QUE ATIVAR ELE NO PROGRAMA DO ANACONDA!
 
 repostas_certas(certas, erradas)
+ #Aréa temporal
+hora_atual = datetime.datetime.now()
+# Extrair a parte da hora
+hora = hora_atual.hour
+minuto = hora_atual.minute
+segundo = hora_atual.second #Finalização Aréa temporal
 mensagem = input("Manda a mensagem:")
 resposta = chatbot.get_response(mensagem)
 print(float(resposta.confidence) < 0.5)
@@ -57,10 +78,20 @@ while True:
     try:
         mensagem = input("Manda a mensagem:")
         resposta = chatbot.get_response(mensagem)
+        if any(keyword in mensagem for keyword in ["faça uma pesquisa", "busque", "pesquise"]):
+            procurar = mensagem.replace("faça uma pesquisa", "busque", "pesquise", "")
+            pesquisa_url = f"https://www.google.com/search?q={'+'.join(procurar.split())}"
+            webbrowser.open(pesquisa_url)
         if float(resposta.confidence) > 0.5:
-            print("Bot:", resposta )
+            print("Bot:",end="")
+            if any(keyword in mensagem for keyword in ["Que horas são agora?","Quais as horas atuais?"]):
+                print(f'Agora são {hora} e {minuto}') 
+            else:
+                print(resposta)
         elif mensagem == "Parar":
             break
+        elif float(resposta.confidence) < 0.5:
+            print("Bot(Resposta_provisoria):", resposta )
         else:
             print('Bot: Ainda não sei responder esta pergunta')
             
