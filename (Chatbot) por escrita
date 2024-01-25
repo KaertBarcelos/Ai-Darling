@@ -46,6 +46,10 @@ def repostas_certas(certas, erradas):
         'Obrigado',
         'De nada',
         'Agradeço pelo compreensão ', 
+        'O que se trata o projeto Darling?',
+        'Ele é um projeto no qual junta um Chatbot com reconhecimento de voz e inteligência. Sua proposta é ser uma assistente nos afazeres',
+        'Quanto tempo levou para sua execução?',
+        'Para contrução do comando levou 1 semana, mais 2 dias para criar é corrigir os erros'
     ])
     respostas.train([
         'Olá, como você está?',
@@ -53,7 +57,7 @@ def repostas_certas(certas, erradas):
         'Compreendo','Entendo',
         'Estou bem','Que otimo',';]',
         'Como os chatbots funcionam?',
-        'Chatbots utilizam algoritmos de processamento de linguagem natural para entender e responder a mensagens'
+        'Chatbots utilizam algoritmos de processamento de linguagem natural para entender e responder a mensagens',
         'Qual é a diferença entre inteligência artificial e aprendizado de máquina?',
         'A inteligência artificial é o campo mais amplo que visa criar máquinas capazes de realizar ',
         'Obrigado!',
@@ -78,10 +82,20 @@ while True:
     try:
         mensagem = input("Manda a mensagem:")
         resposta = chatbot.get_response(mensagem)
-        if any(keyword in mensagem for keyword in ["faça uma pesquisa", "busque", "pesquise"]):
-            procurar = mensagem.replace("faça uma pesquisa", "busque", "pesquise", "")
-            pesquisa_url = f"https://www.google.com/search?q={'+'.join(procurar.split())}"
-            webbrowser.open(pesquisa_url)
+        if any(keyword in mensagem.lower() for keyword in ['faça uma pesquisa', 'busque', 'pesquise']):
+            if termo in ['faça uma pesquisa', 'busque', 'pesquise']:
+                procurar = mensagem.replace(termo, '')           
+                pesquisa_url = f"https://www.google.com/search?q={'+'.join(procurar.split())}"
+                webbrowser.open(pesquisa_url)
+                for link in search(procurar, num=2, stop=3, pause=1):
+                    first_link = next(search(procurar),None)
+                    webbrowser.open(first_link)
+                    if first_link == next(search(procurar),None):
+                        print("Busca finalizada")
+                        break
+                    else:
+                        print("Nehum link encontrado sobre...")
+            
         if float(resposta.confidence) > 0.5:
             print("Bot:",end="")
             if any(keyword in mensagem for keyword in ["Que horas são agora?","Quais as horas atuais?"]):
