@@ -1,4 +1,4 @@
-#Para poder inciar, deve-se enteder que o comando somente ira funciona em um ambiente virtual, com as demias bibliotecas baixadas
+#Para poder inciar, deve-se enteder que o comando somente ira funciona em um ambiente virtual, com as demais bibliotecas baixadas
 #Abra o promt do Anaconda -> activate {nome do ambiente virtual} (Ex: activate chatpython)
 #Segundo comando para execução -> jupyter notebook (Faça isso no proprio promt do Anaconda, caso você use o jupyter)
 
