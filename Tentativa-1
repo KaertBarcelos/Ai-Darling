@@ -1,27 +1,19 @@
-import pyautogui
+from tkinter import Tk, Frame, Label, Entry, Button
 import speech_recognition as sr
-import pyttsx3
-import datetime
-import wikipedia
-import wikipediaapi
-import pywhatkit
-import time
 import webbrowser
+import pyautogui
+import datetime
+import pyttsx3
+import time
 import sys
-import tkinter as tk
-from tkinter import *
-def search_wikipedia(keyword):
-    wiki_wiki = wikipediaapi.Wikipedia('pt')
-    page_py = wiki_wiki.page(keyword)
-    if page_py.exists():
-        print(f"Encontrado: {page_py.title}")
-        print("Conteúdo:")
-        print(page_py.text[:200])  # Exibe os primeiros 200 caracteres do conteúdo
-    else:
-        print(f"{keyword} não encontrado na Wikipedia.")
-    search_wikipedia('Palavra')
+def time_2():
+    time.sleep(2)
+def time_3():
+    time.sleep(3)
+def time_5():
+    time.sleep(5)
 def Chat_voz():
-    # Habilita o microfone para ouvir o usuario
+    #Habilita o microfone para ouvir o usuario
     microfone = sr.Recognizer()
     maquina = pyttsx3.init()
     concluido = False
@@ -45,13 +37,12 @@ def Chat_voz():
                 comando = frase.replace('darling', '')
                 maquina.say(comando)
                 maquina.runAndWait()
-                time.sleep(3.0)
                 while True:
                     with sr.Microphone() as source:
                         microfone.adjust_for_ambient_noise(source)
                         if concluido == False:
                             print("Oque você deseja pesquisar? ")
-                            maquina.say("Oque você deseja?:")
+                            maquina.say("O que você deseja?:")
                         elif concluido == True:
                             maquina.say("Deseja mais alguma coisa:")
                         maquina.runAndWait()
@@ -63,6 +54,55 @@ def Chat_voz():
                             hora = datetime.datetime.now().strftime('%H:%M')
                             maquina.say("Agora são" + hora)
                             maquina.runAndWait()
+                        if "spotify" in frase_2.lower():
+                            pyautogui.hotkey("win", "s")  # Ativa a barra de pesquisa do Windows
+                            time.sleep(2)
+                            pyautogui.write("spotify")
+                            time.sleep(2)
+                            pyautogui.press("enter")
+                            time.sleep(15)
+                            maquina.say("Processando...")
+                            maquina.runAndWait()
+                            try:
+                                pyautogui.hotkey("ctrl", "l")
+                                time.sleep(2)
+                            except Exception as e:
+                                print(f"Erro ao pressionar Ctrl+L: {e}")
+                            if any(keyword in frase_2.lower() for keyword in["busque", "buscar por", "procurar por", "busque por", "procure por"]):
+                                termo = frase_2.lower(["busque", "buscar por", "procurar por", "procure por", "busque por", "spotify","abrir"])
+                                procurar = frase_2
+                                for t in termo:
+                                    procurar = procurar.replace(t, '')
+                                try:
+                                    pyautogui.write(procurar)
+                                    time.sleep(2)
+                                    pyautogui.press("enter")
+                                    maquina.say("Busca por música finalizada")
+                                    maquina.runAndWait()
+                                    break
+                                except Exception as e:
+                                    print(f"Erro ao escrever na barra de endereço: {e}")
+                        if "bloco de anotação" in frase_2.lower():
+                            pyautogui.click(x=-500, y=48)
+                            time.sleep(2)
+                            pyautogui.hotkey("ctrl", "t")
+                            time.sleep(2)
+                            pyautogui.write("https://keep.google.com/u/0/#home")
+                            time.sleep(1.9)
+                            pyautogui.press("enter")
+                            time.sleep(2.5)
+                            pyautogui.click(x=-667, y=-163)
+                            if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por"," procurar por"]):
+                                for termo in ["bloco de anotação","procurar por", "procure por", "busque por"]:
+                                    procurar = frase_2.replace(termo,'')
+                                    time.sleep(2)
+                                    pyautogui.write(procurar)
+                                    pyautogui.press("enter")
+                                    maquina.say("Busca finalizada")
+                                    time.sleep(2)
+                                    maquina.say("Deseja mais alguma coisa?")
+                                    maquina.runAndWait()
+                                    break
                         if Opera_aberto == False:
                             if any(keyword in frase_2.lower() for keyword in ["opera", "ópera", "opera gx", "google"]):
                                 pyautogui.press("win")
@@ -93,13 +133,14 @@ def Chat_voz():
                                             frase_3 = microfone.recognize_google(audio, language='pt-BR')
                                             pyautogui.click(-570, -158)
                                             if any(keyword in frase_3.lower() for keyword in ["procurar vídeo", "procurar por", "procure vídeo"]):
-                                                pyautogui.click(-570, -158)
-                                                procurar = frase_3.replace('procure videos' or 'procurar por' or 'procure vídeo', '')
-                                                pyautogui.write(procurar)
-                                                time.sleep(1.9)
-                                                pyautogui.press("enter")
-                                                concluido = True
-                                                break
+                                                if termo in ["procurar vídeo", "procurar por", "procure vídeo"]:
+                                                    pyautogui.click(-570, -158)
+                                                    procurar = frase_3.replace(termo,'')
+                                                    pyautogui.write(procurar)
+                                                    time.sleep(1.9)
+                                                    pyautogui.press("enter")
+                                                    concluido = True
+                                                    break
                                             else:
                                                 procurar = frase_3
                                                 pyautogui.write(procurar)
@@ -113,10 +154,11 @@ def Chat_voz():
                                             print("Executando código no bloco finally(3).")
                         elif Opera_aberto == True:
                             if any(keyword in frase_2.lower() for keyword in ["faça uma pesquisa", "busque", "pesquise"]):
-                                procurar = frase_2.replace('faça uma busca por' or 'busque', '')
-                                pesquisa_url = f"https://www.google.com/search?q={'+'.join(procurar.split())}"
-                                webbrowser.open(pesquisa_url)
-                                concluido = True
+                                if termo in ['faça uma pesquisa', 'busque', 'pesquise']:
+                                    procurar = frase_2.replace(termo, '')
+                                    pesquisa_url = f"https://www.google.com/search?q={'+'.join(procurar.split())}"
+                                    webbrowser.open(pesquisa_url)
+                                    concluido = True
                         elif any(keyword in frase_2.lower() for keyword in ["Não","Nao","encerrar", "encerre"]):
                             print("===" * 10)
                             print("Finalizando programa")
@@ -132,8 +174,54 @@ def Chat_voz():
             print("Encerrando todos os loops.")
         finally:
             print("Executando comando(1).")
+def calculadora():
+    pyautogui.hotkey("win", "s")
+    time.sleep(2)
+    pyautogui.write("Calculcadora")
+    time.sleep(2)
+    pyautogui.press("enter")
+def discord():
+    pyautogui.hotkey("win", "s")
+    time.sleep(2)
+    pyautogui.write("Discord")
+    time.sleep(2)
+    pyautogui.press("enter")
+def steam():
+    pyautogui.hotkey("win", "s")
+    time.sleep(2)
+    pyautogui.write("Steam")
+    time.sleep(2)
+    pyautogui.press("enter")
+class Grid(Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.master.title("Painel")
+        self.master.geometry("200x100")
 
-janela = tk.Tk()
-botao = tk.Button(janela, text='Iniciar', command = Chat_voz)
-botao.grid(row=1, column=2)
-janela.mainloop()
+        self.entrada1 = Entry(self.master)
+        self.resultado_label = Label(self.master, text="Resultado:")
+        self.resultado_var = Label(self.master, text="")
+
+        self.entrada1 = Entry(self.master)
+        self.entrada2 = Entry(self.master)
+
+        Label(self.master, text="Pesquisa:").grid(row=0)
+        Label(self.master, text="Resultado:").grid(row=1)
+        self.resultado_label.grid(row=1, sticky="w", padx=5)
+        self.entrada1.grid(row=0, column=1, padx=5)
+        self.resultado_var.grid(row=1, column=1, padx=5)
+
+        Button(self.master, text="Procurar",command=self.Iniciar).grid(row=2, column=1)
+
+        self.entrada1.grid(row=0, column=1)
+        self.entrada2.grid(row=1, column=1)
+
+    def Iniciar(self):
+        pesquisa = self.entrada1.get().lower()
+        comandos = {"chat_voz": Chat_voz, "calculadora": calculadora, "discord": discord, "steam": steam,
+                    "sair": sys.exit}
+        resultado = comandos.get(pesquisa, lambda: print("Comando não reconhecido"))()
+        self.resultado_var.config(text=resultado)
+root = Tk()
+Grid(master=root).mainloop()
