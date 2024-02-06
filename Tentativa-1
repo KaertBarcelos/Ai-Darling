@@ -60,7 +60,7 @@ def Chat_voz():
                             pyautogui.write("spotify")
                             time.sleep(2)
                             pyautogui.press("enter")
-                            time.sleep(15)
+                            time.sleep(10)
                             maquina.say("Processando...")
                             maquina.runAndWait()
                             try:
@@ -68,11 +68,11 @@ def Chat_voz():
                                 time.sleep(2)
                             except Exception as e:
                                 print(f"Erro ao pressionar Ctrl+L: {e}")
-                            if any(keyword in frase_2.lower() for keyword in["busque", "buscar por", "procurar por", "busque por", "procure por"]):
-                                termo = frase_2.lower(["busque", "buscar por", "procurar por", "procure por", "busque por", "spotify","abrir"])
+                            if any(keyword in frase_2.lower() for keyword in ["busque", "buscar por", "procurar por", "busque por", "procure por"]):
+                                termos = ["busque", "buscar por", "procurar por", "procure por", "busque por", "spotify","abrir"]
+                                termo_encontrado = next((termo for termo in termos if termo in frase_2.lower()), None)
                                 procurar = frase_2
-                                for t in termo:
-                                    procurar = procurar.replace(t, '')
+                                procurar = procurar.replace(termo_encontrado, '')
                                 try:
                                     pyautogui.write(procurar)
                                     time.sleep(2)
@@ -82,7 +82,7 @@ def Chat_voz():
                                     break
                                 except Exception as e:
                                     print(f"Erro ao escrever na barra de endereço: {e}")
-                        if "bloco de anotação" in frase_2.lower():
+                        if "bloco de anotação" in frase_2.lower() or "keep" in frase_2.lower():
                             pyautogui.click(x=-500, y=48)
                             time.sleep(2)
                             pyautogui.hotkey("ctrl", "t")
@@ -92,17 +92,45 @@ def Chat_voz():
                             pyautogui.press("enter")
                             time.sleep(2.5)
                             pyautogui.click(x=-667, y=-163)
-                            if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por"," procurar por"]):
-                                for termo in ["bloco de anotação","procurar por", "procure por", "busque por"]:
-                                    procurar = frase_2.replace(termo,'')
-                                    time.sleep(2)
-                                    pyautogui.write(procurar)
-                                    pyautogui.press("enter")
-                                    maquina.say("Busca finalizada")
-                                    time.sleep(2)
-                                    maquina.say("Deseja mais alguma coisa?")
-                                    maquina.runAndWait()
-                                    break
+                            if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por", "procurar por"]):
+                                termos = ["busque", "buscar por", "procurar por", "procure por", "busque por",
+                                          "bloco de anotação", "bloco de anotao", "keep", "abrir"]
+                                termo_encontrado = next((termo for termo in termos if termo in frase_2.lower()), None)
+                                procurar = frase_2.replace(termo_encontrado, '')
+                                pyautogui.doubleClick(x=-661, y=-159)
+                                time.sleep(2)
+                                pyautogui.write(procurar)
+                                time.sleep(2)
+                                pyautogui.press("enter")
+                                maquina.say("Busca finalizada")
+                                time.sleep(2)
+                                maquina.say("Fale o que você deseja adicionar à anotação!")
+                                maquina.runAndWait()
+                                while True:
+                                    with sr.Microphone() as source:
+                                        microfone.adjust_for_ambient_noise(source)
+                                        audio = microfone.listen(source)
+                                    try:
+                                        pyautogui.click(x=-508, y=-81)
+                                        print("Fale o que deseja adicionar a antotação:")
+                                        frase_22 = microfone.recognize_google(audio, language='pt-BR')
+                                        pyautogui.click(x=-532, y=105)
+                                        time.sleep(1.5)
+                                        pyautogui.hotkey("ctrl", "a")
+                                        time.sleep(1)
+                                        pyautogui.hotkey("down")
+                                        pyautogui.write(frase_22)
+                                        maquina.say("Anotação adicionada")
+                                        maquina.runAndWait()
+                                        break
+                                    except sr.UnknownValueError:
+                                        maquina.say("Não foi possível entender o áudio")
+                                        maquina.runAndWait()
+                                    except Exception as e:
+                                        print(f"Erro inesperado: {e}")
+                                    finally:
+                                        maquina.say("Processando")
+                                        maquina.runAndWait()
                         if Opera_aberto == False:
                             if any(keyword in frase_2.lower() for keyword in ["opera", "ópera", "opera gx", "google"]):
                                 pyautogui.press("win")
