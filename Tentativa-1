@@ -66,22 +66,22 @@ def Chat_voz():
                             try:
                                 pyautogui.hotkey("ctrl", "l")
                                 time.sleep(2)
+                                if any(keyword in frase_2.lower() for keyword in["busque", "buscar por", "procurar por","busque por", "procure por"]):
+                                    termos = ["busque", "buscar por", "procurar por", "procure por", "busque por","spotify", "abrir"]
+                                    termo_encontrado = next((termo for termo in termos if termo in frase_2.lower()),None)
+                                    procurar = frase_2
+                                    procurar = procurar.replace(termo_encontrado, '')
+                                    try:
+                                        pyautogui.write(procurar)
+                                        time.sleep(2)
+                                        pyautogui.press("enter")
+                                        maquina.say("Busca por música finalizada")
+                                        maquina.runAndWait()
+                                        break
+                                    except Exception as e:
+                                        print(f"Erro ao escrever na barra de endereço: {e}")
                             except Exception as e:
                                 print(f"Erro ao pressionar Ctrl+L: {e}")
-                            if any(keyword in frase_2.lower() for keyword in ["busque", "buscar por", "procurar por", "busque por", "procure por"]):
-                                termos = ["busque", "buscar por", "procurar por", "procure por", "busque por", "spotify","abrir"]
-                                termo_encontrado = next((termo for termo in termos if termo in frase_2.lower()), None)
-                                procurar = frase_2
-                                procurar = procurar.replace(termo_encontrado, '')
-                                try:
-                                    pyautogui.write(procurar)
-                                    time.sleep(2)
-                                    pyautogui.press("enter")
-                                    maquina.say("Busca por música finalizada")
-                                    maquina.runAndWait()
-                                    break
-                                except Exception as e:
-                                    print(f"Erro ao escrever na barra de endereço: {e}")
                         if "bloco de anotação" in frase_2.lower() or "keep" in frase_2.lower():
                             pyautogui.click(x=-500, y=48)
                             time.sleep(2)
@@ -92,11 +92,12 @@ def Chat_voz():
                             pyautogui.press("enter")
                             time.sleep(2.5)
                             pyautogui.click(x=-667, y=-163)
-                            if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por", "procurar por"]):
+                            if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por", "procurar por"]):                                                                                      
                                 termos = ["busque", "buscar por", "procurar por", "procure por", "busque por",
                                           "bloco de anotação", "bloco de anotao", "keep", "abrir"]
-                                termo_encontrado = next((termo for termo in termos if termo in frase_2.lower()), None)
-                                procurar = frase_2.replace(termo_encontrado, '')
+                                procurar = frase_2.lower() # Inicializa a variável procurar com a frase original
+                                for termo in termos:
+                                    procurar = procurar.replace(termo, '')
                                 pyautogui.doubleClick(x=-661, y=-159)
                                 time.sleep(2)
                                 pyautogui.write(procurar)
