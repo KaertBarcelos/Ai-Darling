@@ -1,11 +1,19 @@
 from tkinter import Tk, Frame, Label, Entry, Button
+import matplotlib.pyplot as plt
 import speech_recognition as sr
+from bs4 import BeautifulSoup
 import webbrowser
 import pyautogui
 import datetime
+import requests
 import pyttsx3
+import psutil
 import time
+import wmi
 import sys
+import re
+
+
 def time_2():
     time.sleep(2)
 def time_3():
@@ -18,6 +26,9 @@ def Chat_voz():
     maquina = pyttsx3.init()
     concluido = False
     Opera_aberto = False
+    f = wmi.WMI()
+    flag = 0
+    navegador = False
     while True:
         class EncerrarTodosOsLoops(Exception):
             pass
@@ -30,7 +41,7 @@ def Chat_voz():
             audio = microfone.listen(source)
         try:
             # Passa o audio para o reconhecedor de padroes do speech_recognition
-            frase = microfone.recognize_google(audio, language='pt-BR')
+            frase = microfone.recognize_google(audio, language='pt-BR,en-US')
             # Após alguns segundos, retorna a frase falada;
             print("Você disse: " + frase)
             if "darling" in frase:
@@ -48,12 +59,22 @@ def Chat_voz():
                         maquina.runAndWait()
                         audio = microfone.listen(source)
                     try:
-                        frase_2 = microfone.recognize_google(audio, language='pt-BR')
+                        frase_2 = microfone.recognize_google(audio, language='pt-BR,en-US')
                         print("Ultimo comando dado " + frase_2)
+                        if is_browser_open():
+                            Opera_aberto = True
+                            navegador = True
+                            print("Um navegador está aberto.")
                         if 'horas' in frase_2:
                             hora = datetime.datetime.now().strftime('%H:%M')
                             maquina.say("Agora são" + hora)
                             maquina.runAndWait()
+                        if navegador == True:
+                            if "gráfico" in frase_2.lower():
+                                print("Coloque a url da pagina que deseja criar o grafrico")
+                                url_exemplo = str(input("->"))
+                                dados_numericos = extrair_dados_numericos(url_exemplo)
+                                criar_grafico(dados_numericos)
                         if "spotify" in frase_2.lower():
                             pyautogui.hotkey("win", "s")  # Ativa a barra de pesquisa do Windows
                             time.sleep(2)
@@ -91,14 +112,13 @@ def Chat_voz():
                             time.sleep(1.9)
                             pyautogui.press("enter")
                             time.sleep(2.5)
-                            pyautogui.click(x=-667, y=-163)
-                            if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por", "procurar por"]):                                                                                      
+                            pyautogui.press("/")
+                            if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por", "procurar por"]):
                                 termos = ["busque", "buscar por", "procurar por", "procure por", "busque por",
-                                          "bloco de anotação", "bloco de anotao", "keep", "abrir"]
+                                          "bloco de anotação", "bloco de anotao", "keep", "abrir","/"]
                                 procurar = frase_2.lower() # Inicializa a variável procurar com a frase original
                                 for termo in termos:
                                     procurar = procurar.replace(termo, '')
-                                pyautogui.doubleClick(x=-661, y=-159)
                                 time.sleep(2)
                                 pyautogui.write(procurar)
                                 time.sleep(2)
@@ -114,7 +134,7 @@ def Chat_voz():
                                     try:
                                         pyautogui.click(x=-508, y=-81)
                                         print("Fale o que deseja adicionar a antotação:")
-                                        frase_22 = microfone.recognize_google(audio, language='pt-BR')
+                                        frase_22 = microfone.recognize_google(audio,language='pt-BR,en-US')
                                         pyautogui.click(x=-532, y=105)
                                         time.sleep(1.5)
                                         pyautogui.hotkey("ctrl", "a")
@@ -159,7 +179,7 @@ def Chat_voz():
                                             audio = microfone.listen(source)
                                             time.sleep(2)
                                         try:
-                                            frase_3 = microfone.recognize_google(audio, language='pt-BR')
+                                            frase_3 = microfone.recognize_google(audio, language='pt-BR,en-US')
                                             pyautogui.click(-570, -158)
                                             if any(keyword in frase_3.lower() for keyword in ["procurar vídeo", "procurar por", "procure vídeo"]):
                                                 if termo in ["procurar vídeo", "procurar por", "procure vídeo"]:
@@ -221,19 +241,57 @@ def steam():
     pyautogui.write("Steam")
     time.sleep(2)
     pyautogui.press("enter")
+def extrair_numeros(texto):
+    # Utilize expressão regular para encontrar números no texto
+    numeros = re.findall(r'\d+\.*\d*', texto)
+    return [float(numero) for numero in numeros]  # Converta os números para float
+
+def extrair_dados_numericos(url):
+    # Faz a requisição para a página
+    response = requests.get(url)
+    if response.status_code == 200:
+        # Obtém o conteúdo HTML da página
+        html_content = response.text
+        # Cria um objeto BeautifulSoup
+        soup = BeautifulSoup(html_content, 'html.parser')
+        # Extrair texto completo da página
+        texto_completo = soup.get_text()
+        # Extrair números do texto completo
+        numeros = extrair_numeros(texto_completo)
+        return numeros
+    else:
+        print(f"Erro {response.status_code} ao acessar a página")
+        return []
+
+def criar_grafico(numeros):
+    if numeros:
+        plt.plot(numeros)
+        plt.ylabel('Valores')
+        plt.xlabel('Índice')
+        plt.title('Gráfico de Dados Numéricos')
+        plt.show()
+    else:
+        print("Nenhum dado numérico encontrado para criar o gráfico")
+
+def is_browser_open():
+    browser_processes = ['chrome', 'firefox', 'iexplore', 'edge', 'opera', 'safari', 'brave']
+
+    for process in psutil.process_iter(['name']):
+        if any(browser_process in process.info['name'].lower() for browser_process in browser_processes):
+            return True
+    return False
 class Grid(Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
         self.master.title("Painel")
-        self.master.geometry("200x100")
+        self.master.geometry("230x100")
 
         self.entrada1 = Entry(self.master)
         self.resultado_label = Label(self.master, text="Resultado:")
         self.resultado_var = Label(self.master, text="")
 
         self.entrada1 = Entry(self.master)
-        self.entrada2 = Entry(self.master)
 
         Label(self.master, text="Pesquisa:").grid(row=0)
         Label(self.master, text="Resultado:").grid(row=1)
@@ -244,13 +302,14 @@ class Grid(Frame):
         Button(self.master, text="Procurar",command=self.Iniciar).grid(row=2, column=1)
 
         self.entrada1.grid(row=0, column=1)
-        self.entrada2.grid(row=1, column=1)
 
     def Iniciar(self):
         pesquisa = self.entrada1.get().lower()
+        self.resultado_var.config(text="Processando...")
         comandos = {"chat_voz": Chat_voz, "calculadora": calculadora, "discord": discord, "steam": steam,
                     "sair": sys.exit}
-        resultado = comandos.get(pesquisa, lambda: print("Comando não reconhecido"))()
+        resultado = comandos.get(pesquisa, lambda: "Comando não reconhecido")()
         self.resultado_var.config(text=resultado)
+
 root = Tk()
 Grid(master=root).mainloop()
