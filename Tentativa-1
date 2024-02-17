@@ -2,13 +2,14 @@ from tkinter import Tk, Frame, Label, Entry, Button
 import matplotlib.pyplot as plt
 import speech_recognition as sr
 from bs4 import BeautifulSoup
+import datetime
+import time
+import schedule as sc
 import webbrowser
 import pyautogui
-import datetime
 import requests
 import pyttsx3
 import psutil
-import time
 import wmi
 import sys
 import re
@@ -20,14 +21,13 @@ def time_3():
     time.sleep(3)
 def time_5():
     time.sleep(5)
+
+frase_2 = '...'
 def Chat_voz():
     #Habilita o microfone para ouvir o usuario
     microfone = sr.Recognizer()
     maquina = pyttsx3.init()
     concluido = False
-    Opera_aberto = False
-    f = wmi.WMI()
-    flag = 0
     navegador = False
     while True:
         class EncerrarTodosOsLoops(Exception):
@@ -51,25 +51,26 @@ def Chat_voz():
                 while True:
                     with sr.Microphone() as source:
                         microfone.adjust_for_ambient_noise(source)
-                        if concluido == False:
-                            print("Oque você deseja pesquisar? ")
-                            maquina.say("O que você deseja?:")
-                        elif concluido == True:
+                        if not concluido:
+                            print("O que você deseja pesquisar? ")
+                            maquina.say("O que você deseja?")
+                        else:
+                            print("Deseja mais alguma coisa:")
                             maquina.say("Deseja mais alguma coisa:")
                         maquina.runAndWait()
                         audio = microfone.listen(source)
                     try:
                         frase_2 = microfone.recognize_google(audio, language='pt-BR,en-US')
                         print("Ultimo comando dado " + frase_2)
-                        if is_browser_open():
-                            Opera_aberto = True
-                            navegador = True
-                            print("Um navegador está aberto.")
+                        if not navegador:
+                            if is_browser_open():
+                                navegador = True
+                                print("\033[1;49;92mUm navegador está aberto\033[m")
                         if 'horas' in frase_2:
                             hora = datetime.datetime.now().strftime('%H:%M')
                             maquina.say("Agora são" + hora)
                             maquina.runAndWait()
-                        if navegador == True:
+                        if navegador:
                             if "gráfico" in frase_2.lower():
                                 print("Coloque a url da pagina que deseja criar o grafrico")
                                 url_exemplo = str(input("->"))
@@ -152,12 +153,12 @@ def Chat_voz():
                                     finally:
                                         maquina.say("Processando")
                                         maquina.runAndWait()
-                        if Opera_aberto == False:
+                        if not navegador:
                             if any(keyword in frase_2.lower() for keyword in ["opera", "ópera", "opera gx", "google"]):
                                 pyautogui.press("win")
                                 if any(keyword in frase_2.lower() for keyword in ["opera", "ópera", "opera gx"]):
                                     pyautogui.write("opera")
-                                    Opera_aberto = True
+                                    navegador = True
                                 elif "google" in frase_2.lower():
                                     pyautogui.write("Google")
                                 time.sleep(1.9)
@@ -165,45 +166,16 @@ def Chat_voz():
                                 time.sleep(1.5)
                                 pyautogui.press("Ctrl" + "L")
                                 time.sleep(2.5)
-                                if "youtube" in frase_2.lower():
-                                    pyautogui.write("YouTube")
-                                    time.sleep(1.9)
-                                    pyautogui.press("enter")
-                                    time.sleep(4.5)
-                                    while concluido is False:
-                                        with sr.Microphone() as source:
-                                            microfone.adjust_for_ambient_noise(source)
-                                            print("Qual video você deseja ver?")
-                                            maquina.say("Qual video você deseja ver?")
-                                            maquina.runAndWait()
-                                            audio = microfone.listen(source)
-                                            time.sleep(2)
-                                        try:
-                                            frase_3 = microfone.recognize_google(audio, language='pt-BR,en-US')
-                                            pyautogui.click(-570, -158)
-                                            if any(keyword in frase_3.lower() for keyword in ["procurar vídeo", "procurar por", "procure vídeo"]):
-                                                if termo in ["procurar vídeo", "procurar por", "procure vídeo"]:
-                                                    pyautogui.click(-570, -158)
-                                                    procurar = frase_3.replace(termo,'')
-                                                    pyautogui.write(procurar)
-                                                    time.sleep(1.9)
-                                                    pyautogui.press("enter")
-                                                    concluido = True
-                                                    break
-                                            else:
-                                                procurar = frase_3
-                                                pyautogui.write(procurar)
-                                                time.sleep(1.9)
-                                                pyautogui.press("enter")
-                                                concluido = True
-                                                break
-                                        except Exception as e:
-                                            print(f"Erro inesperado: {e}")
-                                        finally:
-                                            print("Executando código no bloco finally(3).")
-                        elif Opera_aberto == True:
-                            if any(keyword in frase_2.lower() for keyword in ["faça uma pesquisa", "busque", "pesquise"]):
-                                if termo in ['faça uma pesquisa', 'busque', 'pesquise']:
+                        elif navegador:
+                            termos = ["busque", "buscar por", "procurar por", "procure por", "busque por", ]
+                            procurar = frase_2.lower()  # Inicializa a variável procurar com a frase original
+                            for termo in termos:
+                                procurar = procurar.replace(termo, '')
+                            if "youtube" in frase_2.lower():
+                                verifica_pagina(url)
+
+                            if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por", "procurar por"]):
+                                if termo in ["busque", "procure por", "busque por", "procurar por"]:
                                     procurar = frase_2.replace(termo, '')
                                     pesquisa_url = f"https://www.google.com/search?q={'+'.join(procurar.split())}"
                                     webbrowser.open(pesquisa_url)
@@ -280,6 +252,44 @@ def is_browser_open():
         if any(browser_process in process.info['name'].lower() for browser_process in browser_processes):
             return True
     return False
+def verifica_pagina(url):
+    if "youtube" in frase_2.lower():
+        pyautogui.press("win")
+        time.sleep(1.5)
+        pyautogui.write("opera")
+        time.sleep(1.5)
+        pyautogui.press("enter")
+        time.sleep(1.5)
+        pyautogui.press("Ctrl" + "L")
+        time.sleep(2.5)
+        pyautogui.write("YouTube")
+        time.sleep(1.9)
+        pyautogui.press("enter")
+    try:
+        response = requests.get(url)
+        while True:
+            if response.status_code == 200:
+                print("A página está aberta e acessível.")
+                time.sleep(5)
+                if any(keyword in frase_2.lower() for keyword in ["busque", "procure por", "busque por", "procurar por"]):
+                    termos = ["busque", "buscar por", "procurar por", "procure por", "busque por","youtube"]
+                    procurar = frase_2.lower()
+                    for termo in termos:
+                        procurar = procurar.replace(termo, '')
+                    pyautogui.click(-570, -158)
+                    pyautogui.write(procurar)
+                    time.sleep(1.9)
+                    pyautogui.press("enter")
+                    concluido = True
+                    print("Pesquisa finalizada")
+                    break
+            else:
+                print(f"A página retornou o código de status: {response.status_code}.")
+    except requests.exceptions.RequestException as e:
+        print("Não foi possível acessar a página:", e)
+url = "https://www.youtube.com/"
+
+
 class Grid(Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -313,3 +323,12 @@ class Grid(Frame):
 
 root = Tk()
 Grid(master=root).mainloop()
+def loop():
+    print("Darling-Ativada")
+    root = Tk()
+    Grid(master=root).mainloop()
+
+sc.every().day.at("08:00").do(loop)
+
+while True:
+    sc.run_pending()
